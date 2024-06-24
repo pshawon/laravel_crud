@@ -8,14 +8,19 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 class ProfilesController extends Controller
 {
-    public function index(){   //show profile data
+    public function index(Request $request){   //show profile data
 
         $profiles= Profiles::orderBy('created_at', 'desc')->get();
          $profiles= Profiles::paginate(10);
+         if ($request->ajax()) {
+            return response()->json([
+                'html' => view('profiles.partials._profiles', compact('profiles'))->render(),
+                'pagination' => $profiles->links('pagination::bootstrap-4')->toHtml(),
+            ]);
+        }
 
-        return view('profiles.list',[
-            'profiles'=>$profiles
-        ]);
+
+        return view('profiles.list', compact('profiles'));
         // return view('/profiles/', compact('profiles'));
 
 

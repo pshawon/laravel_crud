@@ -109,7 +109,7 @@
                                             <i class="bi bi-pencil-square h4"></i>
                                         </a>
 
-                                            <button id="deleteButton" type="button" data-id="{{$profile->id}}" class="btn btn-sm text-danger">
+                                            <button  type="button" data-id="{{$profile->id}}" class="deleteButton btn btn-sm text-danger">
                                                 <i class="bi bi-trash h4"></i>
                                             </button>
 
@@ -131,7 +131,6 @@
                             <nav id="pagination" aria-label="Page navigation" class="mt-4 d-flex justify-content-end">
                                 {{ $profiles->links('pagination::bootstrap-4') }}
                             </nav>
-                        </table>
 
                 </div>
 
@@ -145,54 +144,51 @@
     <script>
     $(document).ready(function() {
 
-        $('#deleteButton').on('click', function() {
+        $('.deleteButton').on('click', function() {
         var id = $(this).data('id');
-        deleteProfile(id);
-    });
-
-
-function deleteProfile(id) {
-    if (confirm('Are you sure you want to delete this record?')) {
-        $.ajax({
-            url: '{{ route("profiles.destroy", ":id") }}'.replace(':id', id),
-            type: 'DELETE',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.message) {
-                    // Redirect to the profile index page with a success message
-                    window.location.href = '{{ route("profiles.index") }}' ,
-                    alert('Record deleted successfully.');
-
-                } else {
-                    alert('Error: Record not found.');
-                }
-            },
-            error: function(xhr, status, error) {
-                alert('Error: ' + xhr.responseText);
-            }
+         deleteProfile(id);
         });
-    }
- }
+
+
+        function deleteProfile(id) {
+            if (confirm('Are you sure you want to delete this record?')) {
+                $.ajax({
+                    url: '{{ route("profiles.destroy", ":id") }}'.replace(':id', id),
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.message) {
+                            // Redirect to the profile index page with a success message
+                            window.location.href = '{{ route("profiles.index") }}' + '?message=' + encodeURIComponent(response.message);
+
+                        } else {
+                            alert('Error: Record not found.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Error: ' + xhr.responseText);
+                        }
+                });
+            }
+        }
         // Fetch results for search
         $('#search').on('keyup', function() {
-                    fetchResults();
-            });
+            fetchResults();
+        });
 
 
         function fetchResults(page = 1) {
                 let search = $('#search').val();
 
 
-            if(search){
-                $('.allData').hide();
-                $('.searchData').show();
-            }else{
-                $('.allData').show();
-                $('.searchData').hide();
-
-                }
+                if(search){
+                    $('.allData').hide();
+                    $('.searchData').show();
+                }else{
+                    $('.allData').show();
+                    $('.searchData').hide();}
 
 
                 $.ajax({
@@ -232,16 +228,14 @@ function deleteProfile(id) {
                                     if (link.url) {
                                         $('#pagination').append('<button class="page-link" data-page="' + (new URL(link.url).searchParams.get('page') || 1) + '">' + link.label + '</button>');
                                     } else {
-                                        $('#pagination').append('<span>' + link.label + '</span>');
-                                    }
+                                        $('#pagination').append('<span>' + link.label + '</span>');}
                                 });
                             }
                         } else {
-                            $('#table-body').html('<tr><td colspan="4">No results found</td></tr>');
-                        }
+                            $('#table-body').html('<tr><td colspan="4">No results found</td></tr>');}
                     }
                 });
-            }
+        }
 
 
 
