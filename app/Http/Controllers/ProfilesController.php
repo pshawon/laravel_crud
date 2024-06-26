@@ -10,17 +10,13 @@ class ProfilesController extends Controller
 {
     public function index(Request $request){   //show profile data
 
-        $profiles= Profiles::orderBy('created_at', 'desc')->get();
-         $profiles= Profiles::paginate(10);
-         if ($request->ajax()) {
-            return response()->json([
-                'html' => view('profiles.partials._profiles', compact('profiles'))->render(),
-                'pagination' => $profiles->links('pagination::bootstrap-4')->toHtml(),
-            ]);
-        }
+        $profiles = profiles::paginate(10);
 
+    if ($request->ajax()) {
+        return view('items.partials.table', compact('profiles'))->render();
+    }
 
-        return view('profiles.list', compact('profiles'));
+    return view('profiles.list', compact('profiles'));
         // return view('/profiles/', compact('profiles'));
 
 
@@ -235,26 +231,25 @@ class ProfilesController extends Controller
 
     }
     public function destroy($id) {
-        try {
-            $profile = Profiles::findOrFail($id);
 
-            // Delete image file if it exists
-            if (!empty($profile->image)) {
-                File::delete(public_path('/uploads/profiles/' . $profile->image));
-            }
+        $profiles = profiles::findOrFail($id);
 
-            // Delete attachment file if it exists
-            if (!empty($profile->attached)) {
-                File::delete(public_path('/uploads/attached/' . $profile->attached));
-            }
-
-            // Delete the profile record
-            $profile->delete();
-
-            return response()->json(['message' => 'Profile deleted successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to delete profile: ' . $e->getMessage()], 500);
+        // Delete image file if it exists
+        if (!empty($profiles->image)) {
+            File::delete(public_path('/uploads/profiles/' . $profiles->image));
         }
+
+        // Delete attachment file if it exists
+        if (!empty($profiles->attached)) {
+            File::delete(public_path('/uploads/attached/' . $profiles->attached));
+        }
+
+        // Delete the profile record
+        $profiles->delete();
+
+        $profiles = Profiles::paginate(10);
+
+        return view('profiles.partialTable', compact('profiles'))->render();
     }
 
 
@@ -262,13 +257,13 @@ class ProfilesController extends Controller
     public function profile_search(Request $request)
     {
 
-        $page = $request->input('page', 1);
 
-        $output = '';
+
         $profiles = Profiles::where('name', 'like', '%' . $request->search . '%')
                             ->orWhere('email', 'like', '%' . $request->search . '%')
                             ->orWhere('address', 'like', '%' . $request->search . '%')
-                            ->paginate(10, ['*'], 'page', $page);
+                            ->paginate(10);
+        return view('profiles.partialTable', compact('profiles'))->render();
 
         // foreach ($profiles as $profiles) {
 
@@ -317,7 +312,7 @@ class ProfilesController extends Controller
         //     </tr>';
         // }
 
-        return response()->json($profiles);
+        // return response()->json($profiles);
     }
 
 
